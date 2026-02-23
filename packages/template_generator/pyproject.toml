@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "oai-template-generator"
-description = "OAI Agent Server - FastAPI based server for OAI Agents"
+description = "🚀 Python Project Template Builder — scaffold agent or MCP projects instantly."
 authors = [{ name = "Vinod Kumar KP", email = "vinod.kunnum-purath@capgemini.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11"
-keywords = ["agent", "agent-server", "oai-agent-server", "fastapi"]
+keywords = ["template", "generator", "scaffold", "mcp", "agent", "ai"]
 dynamic = ["version"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -20,14 +20,20 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 
-# Base dependencie
+dependencies = [
+    "click>=8.0.0",
+]
+
+[project.scripts]
+pytemplate = "oai_template_generator.cli:main"
+
 [tool.hatch.version]
 source = "vcs"
 raw-options = { root = "../.." }
 fallback-version = "0.1.0"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/oai_template_generator"]
+packages = ["oai_template_generator"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src" = ""
