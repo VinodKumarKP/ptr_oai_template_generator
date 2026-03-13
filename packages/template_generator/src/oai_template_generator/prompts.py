@@ -119,6 +119,15 @@ def prompt_project_details(
             
             print(f"\nConfiguration for '{item}':")
             port = _ask(f"  Port for {item}", default=str(8000 + i))
+            
+            # Default class name derived from server name (e.g. env_lookup_server -> EnvLookupTools)
+            default_cls = "".join(word.capitalize() for word in item.split("_"))
+            if default_cls.endswith("Server"):
+                default_cls = default_cls[:-6] + "Tools"
+            else:
+                default_cls += "Tools"
+                
+            class_name = _ask(f"  Tools Class Name", default=default_cls)
             desc = _ask(f"  Description for {item}", default="MCP server")
             tags = _ask(f"  Tags (comma-separated)", default="mcp")
             source = _ask(f"  Source URL", default="")
@@ -136,6 +145,7 @@ def prompt_project_details(
             
             items.append({
                 "name": item,
+                "class_name": class_name,
                 "port": port,
                 "description": desc,
                 "tags": [t.strip() for t in tags.split(",") if t.strip()],

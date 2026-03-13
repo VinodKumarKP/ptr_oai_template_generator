@@ -96,6 +96,30 @@ class ProjectBuilder:
         servers_dir = mcp_registry_servers / "servers"
         servers_config_dir = mcp_registry_servers / "servers_config"
         
+        # Tools directory for MCP servers (if needed, though typically inside server dir)
+        # But instructions say: "ask for class name. Create the class script with few dummy functions."
+        # This implies creating a separate file for the class? Or updating the server.py?
+        # The prompt says "Create the class script with few dummy functions. Then update ... server.template with class name"
+        # It seems the class script is the Tools class file referenced in server.template.
+        # Let's create a `utils` directory if it doesn't exist and put the class file there.
+        # Or put it inside the server directory itself?
+        # The template has `from mcp_registry_servers.utils.{{mcp util file name}} import {{mcp util class name}}` (or similar in original)
+        # But wait, our current server.template (from previous steps) has:
+        # `from mcp_registry_servers.tools.{tool_file_name} import {tools_class_name}`
+        # Wait, the current `server.template` content is:
+        # from mcp_registry_servers.tools.{tool_file_name} import {tools_class_name}
+        # ... object_list=[{tools_class_name}()]
+        
+        # So we need to:
+        # 1. Create `mcp_registry_servers/tools/{tool_file_name}.py`
+        # 2. Put the class `{tools_class_name}` in it with dummy functions.
+        # 3. Update server.template and write to server.py.
+        
+        # We need a place for these tool files. Let's assume `mcp_registry_servers/tools`.
+        tools_dir = mcp_registry_servers / "tools"
+        tools_dir.mkdir(exist_ok=True)
+        (tools_dir / "__init__.py").touch()
+        
         # Template files
         template_yaml = servers_config_dir / "template_server.yaml"
         server_template_file = mcp_registry_servers / "server.template"
@@ -110,17 +134,71 @@ class ProjectBuilder:
             # 1. Create the server directory and copy base files
             shutil.copytree(src_servers_template, target_server_dir, dirs_exist_ok=True)
             
-            # 2. Handle server.py from server.template
+            # Extract class name if provided, else generate
+            if isinstance(server_config, dict):
+                tools_class_name = server_config.get("class_name")
+                if not tools_class_name:
+                    # Fallback logic
+                    tools_class_name = "".join(word.capitalize() for word in server_name.split("_")) 
+                    if tools_class_name.endswith("Server"):
+                        tools_class_name = tools_class_name[:-6] + "Tools"
+                    else:
+                        tools_class_name += "Tools"
+            else:
+                tools_class_name = "".join(word.capitalize() for word in server_name.split("_")) + "Tools"
+
+            # Tool file name matches server name usually, or we can use snake_case of class
+            tool_file_name = server_name
+            
+            # 2. Create the class script (Tools file)
+            tool_file_path = tools_dir / f"{tool_file_name}.py"
+            tool_content = f'''"""Tools for {server_name}."""
+
+class {tools_class_name}:
+    """
+    Tools for {server_name}.
+    """
+    
+    def example_tool(self, query: str) -> str:
+        """
+        An example tool function.
+        
+        Args:
+            query (str): The query string.
+            
+        Returns:
+            str: The result.
+        """
+        return f"Processed {{query}} by {server_name}"
+
+    def status_check(self) -> dict:
+        """
+        Check status.
+        
+        Returns:
+            dict: Status info.
+        """
+        return {{"status": "ok", "server": "{server_name}"}}
+'''
+            tool_file_path.write_text(tool_content, encoding="utf-8")
+
+            # 3. Handle server.py from server.template
             target_server_py = target_server_dir / "server.py"
             if server_template_file.exists():
                 content = server_template_file.read_text(encoding="utf-8")
-                class_name = "".join(word.capitalize() for word in server_name.split("_")) + "Server"
-                content = content.replace("{server_name}", class_name)
-                content = content.replace("{tool_file_name}", server_name)
-                content = content.replace("{tools_class_name}", class_name.replace("Server", "Tools"))
+                
+                # Server class name
+                server_class_name = "".join(word.capitalize() for word in server_name.split("_"))
+                if not server_class_name.endswith("Server"):
+                    server_class_name += "Server"
+                
+                content = content.replace("{server_name}", server_class_name)
+                content = content.replace("{tool_file_name}", tool_file_name)
+                content = content.replace("{tools_class_name}", tools_class_name)
+                
                 target_server_py.write_text(content, encoding="utf-8")
 
-            # 3. Create config yaml dynamically based on user input
+            # 4. Create config yaml dynamically based on user input
             if isinstance(server_config, dict):
                 yaml_content = []
                 yaml_content.append(f"port: {server_config['port']}")
