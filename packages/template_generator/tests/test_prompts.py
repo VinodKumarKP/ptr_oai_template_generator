@@ -70,21 +70,22 @@ def test_prompt_project_details_agent(mocker):
     # -- Loop for 'research' --
     # 8. Port
     # 9. Description
-    # 10. Sub-agents (empty -> self)
-    # 11. System Prompt
-    # 12. Model ID (Select 5 - Custom)
-    # 13. Custom Model ID
-    # 14. AWS Region
-    # 15. Use tools? (y)
-    # 16. Tool list
-    # 17. Use MCP? (n)
-    # 18. Global Memory? (n)
-    # 19. Global KB? (n)
-    # 20. Agent KB? (n)
-    # 21. Guardrails? (n)
-    # 22. Tags
-    # 23. Add prompts? (n)
-    # 24. Env vars? (n)
+    # 10. Pattern Selection (1 - supervisor) NEW
+    # 11. Sub-agents (empty -> self)
+    # 12. System Prompt
+    # 13. Model ID (Select 5 - Custom)
+    # 14. Custom Model ID
+    # 15. AWS Region
+    # 16. Use tools? (y)
+    # 17. Tool list
+    # 18. Use MCP? (n)
+    # 19. Global Memory? (n)
+    # 20. Global KB? (n)
+    # 21. Agent KB? (n)
+    # 22. Guardrails? (n)
+    # 23. Tags
+    # 24. Add prompts? (n)
+    # 25. Env vars? (n)
 
     mocker.patch("builtins.input", side_effect=[
         "agent_test",           # 1
@@ -93,24 +94,25 @@ def test_prompt_project_details_agent(mocker):
         ".",                    # 4
         "Description",          # 5
         "research",             # 6
-        "1",                    # 7 (Framework)
+        "1",                    # 7 (Framework: langgraph)
         "9000",                 # 8 (Port)
         "A research agent",     # 9
-        "",                     # 10 (Sub-agents empty)
-        "You are a researcher", # 11 (Instructions)
-        "5",                    # 12 (Model - Custom)
-        "my-custom-model",      # 13
-        "us-west-2",            # 14
-        "y",                    # 15 (Tools)
-        "search_tool",          # 16
-        "n",                    # 17 (MCP)
-        "n",                    # 18 (Memory)
-        "n",                    # 19 (Global KB)
-        "n",                    # 20 (Agent KB)
-        "n",                    # 21 (Guardrails)
-        "research, ai",         # 22 (Tags)
-        "n",                    # 23 (Prompts)
-        "n"                     # 24 (Env)
+        "1",                    # 10 (Pattern: supervisor)
+        "",                     # 11 (Sub-agents empty)
+        "You are a researcher", # 12 (Instructions)
+        "5",                    # 13 (Model - Custom)
+        "my-custom-model",      # 14
+        "us-west-2",            # 15
+        "y",                    # 16 (Tools)
+        "search_tool",          # 17
+        "n",                    # 18 (MCP)
+        "n",                    # 19 (Memory)
+        "n",                    # 20 (Global KB)
+        "n",                    # 21 (Agent KB)
+        "n",                    # 22 (Guardrails)
+        "research, ai",         # 23 (Tags)
+        "n",                    # 24 (Prompts)
+        "n"                     # 25 (Env)
     ])
     
     template, slug, author, email, output_dir, description, items, framework = prompt_project_details(

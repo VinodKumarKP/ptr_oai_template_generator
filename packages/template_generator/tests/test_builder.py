@@ -106,10 +106,7 @@ def test_agent_build(temp_output_dir):
     yaml_content = (builder.project_dir / "agentic_registry_agents" / "agents_config" / "research_agent.yaml").read_text()
     assert "port: 9000" in yaml_content
     assert "guardrails:" in yaml_content
-    # The key in tools is the file name without extension, e.g. research_agent_utils
-    # The tool function names are inside the file, but referenced in agent list tools
-    # Let's check for the utils reference or correct tool list structure
-    assert "research_agent_utils" in yaml_content
+    assert "research_agent_utils" in yaml_content 
     
     # Verify tools file
     utils_content = (builder.project_dir / "agentic_registry_agents" / "utils" / "research_agent_utils.py").read_text()
@@ -124,7 +121,8 @@ def test_builder_validate_missing_template(temp_output_dir):
         description="D",
         output_dir=temp_output_dir
     )
-    with pytest.raises(SystemExit):
+    # The new implementation raises FileNotFoundError instead of SystemExit
+    with pytest.raises(FileNotFoundError):
         builder._validate()
 
 def test_builder_validate_existing_dir(temp_output_dir):
@@ -161,3 +159,35 @@ def test_builder_overwrite(temp_output_dir):
     builder.build()
     assert not (project_dir / "old_file.txt").exists()
     assert (project_dir / "pyproject.toml").exists()
+
+def test_git_init(temp_output_dir, mocker):
+    mock_run = mocker.patch("subprocess.run")
+    builder = ProjectBuilder(
+        template="mcp",
+        project_name="git_test",
+        author="A",
+        email="a@capgemini.com",
+        description="D",
+        output_dir=temp_output_dir,
+        init_git=True,
+        create_venv=False
+    )
+    builder.build()
+    assert mock_run.call_count >= 3 # init, add, commit
+
+def test_venv_create(temp_output_dir, mocker):
+    mock_run = mocker.patch("subprocess.run")
+    builder = ProjectBuilder(
+        template="mcp",
+        project_name="venv_test",
+        author="A",
+        email="a@capgemini.com",
+        description="D",
+        output_dir=temp_output_dir,
+        init_git=False,
+        create_venv=True
+    )
+    builder.build()
+    # Check if venv creation was called
+    called_args = [call.args[0] for call in mock_run.call_args_list]
+    assert any("venv" in args for args in called_args)

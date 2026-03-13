@@ -2,6 +2,7 @@
 
 import re
 import sys
+from oai_template_generator.constants import FRAMEWORK_PATTERNS
 
 
 def _ask(prompt: str, default: str = "") -> str:
@@ -172,6 +173,10 @@ def prompt_project_details(
             port = _ask(f"  Port for {item}", default=str(8000 + i))
             desc = _ask(f"  Description", default="An AI agent")
             
+            # Pattern Selection
+            patterns = FRAMEWORK_PATTERNS.get(framework, ["single"])
+            pattern = _choose(f"  Select Pattern for '{framework}'", patterns)
+            
             # Agent List (Sub-agents)
             sub_agents_input = _ask("  List of sub-agents (comma-separated). Leave empty for single agent", default="")
             raw_sub_names = [s.strip() for s in sub_agents_input.split(",") if s.strip()]
@@ -196,7 +201,13 @@ def prompt_project_details(
                     
                     sub_agents.append({"name": sub, "context": ctx, "knowledge_base": kb_list})
             
+            # Entry Agent for Multi-agent
+            entry_agent = None
             if len(sub_agents) > 1:
+                # Ask for entry agent, defaulting to the first sub-agent
+                default_entry = sub_agents[0]["name"]
+                entry_agent = _ask(f"  Entry Agent (starts the interaction)", default=default_entry)
+                
                 instructions = _ask(f"  System Prompt for Supervisor")
             else:
                 instructions = _ask(f"  System Prompt for Agent")
@@ -284,6 +295,7 @@ def prompt_project_details(
 
             items.append({
                 "name": item,
+                "pattern": pattern,
                 "port": port,
                 "description": desc,
                 "instructions": instructions,
@@ -293,6 +305,7 @@ def prompt_project_details(
                 "tool_list": tool_list,
                 "mcp_servers": mcp_servers,
                 "sub_agents": sub_agents,
+                "entry_agent": entry_agent,
                 "global_kb": global_kb,
                 "memory_config": memory_config,
                 "use_guardrails": use_guardrails,
