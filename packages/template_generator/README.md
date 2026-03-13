@@ -1,137 +1,99 @@
-# OAI Agent Server
+# 🚀 Python Project Template Builder
 
-A robust, FastAPI-based server for hosting and managing OAI Agents. This server provides a standardized HTTP interface for interacting with agents, including chat, streaming, logging, and management capabilities.
+A powerful CLI tool to instantly scaffold **AI Agent** and **Model Context Protocol (MCP)** projects with best practices, framework-specific configurations, and organizational standards.
 
-## Features
+## ✨ Features
 
-*   **FastAPI Powered**: Built on modern, high-performance FastAPI framework.
-*   **Standardized API**: RESTful endpoints for chat (`/chat`), streaming (`/chat/stream`), and agent management.
-*   **Request Isolation**: Thread-safe request handling with isolated environment variables for each request.
-*   **Authentication**: Built-in API token validation using `Depends` for security.
-*   **Streaming Support**: Server-Sent Events (SSE) support for real-time agent responses.
-*   **File Uploads**: Support for uploading files alongside chat messages.
-*   **Comprehensive Logging**: Integrated database logging (PostgreSQL) for all interactions, including token usage and latency metrics.
-*   **Graceful Shutdown**: Handles server restarts and shutdowns gracefully, ensuring active requests complete.
-*   **Health Checks**: Standardized `/health` and `/status` endpoints for monitoring.
+- **Agent Scaffolding**: Support for multiple frameworks including `langgraph`, `crewai`, `strands`, and `openai`.
+- **MCP Scaffolding**: Quickly create MCP server projects with registry and server configurations.
+- **Interactive CLI**: Guided setup for project name, author, email, and specific project details.
+- **Automated Setup**:
+  - Prefixes project names (`ptr_agent_servers_` or `ptr_mcp_servers_`).
+  - Validates organizational email (`@capgemini.com`).
+  - Automatically uncomments framework-specific dependencies in `pyproject.toml` and `requirements.txt`.
+  - Generates boilerplate code for agents and servers from templates.
+  - Initializes Git and creates a virtual environment (`.venv`).
 
-## Installation
+## 🚀 Getting Started
 
-You can install the server directly from the source:
+### Installation
 
-```bash
-pip install .
-```
-
-Or install in editable mode for development:
+Install the tool in editable mode:
 
 ```bash
 pip install -e .
 ```
 
-## Usage
+### Usage
 
-### Starting the Server
-
-You can start the server using the installed command-line tool:
+#### List Available Templates
 
 ```bash
-oai-agent-server <agent_name>
+pytemplate list
 ```
 
-**Options:**
+#### Create a New Project
 
-*   `agent_name`: The name of the agent configuration to load (Required).
-*   `--port`, `-p`: Port to run the server on (default: 8000).
-*   `--host`: Host to bind the server to (default: 0.0.0.0).
-*   `--temperature`, `-t`: Override agent temperature.
-*   `--max-tokens`, `-m`: Override agent max tokens.
-*   `--allowed-modes`: List of allowed API modes (chat, agent, logs, health).
-
-**Example:**
+You can start the interactive wizard by running:
 
 ```bash
-oai-agent-server my_agent --port 8080 --allowed-modes chat health
+pytemplate new
 ```
 
-### Environment Variables
-
-The server respects the following environment variables:
-
-**General:**
-*   `AGENT_AUTH_ENABLED`: Set to `true` or `false` to enable/disable authentication (default: `true`).
-*   `FORCE_AUTH`: Set to `true` to enforce authentication even on localhost (default: `false`).
-*   `AGENT_REINITIALIZE`: If set to `true` in a request header, triggers agent re-initialization.
-
-**Database Logging (PostgreSQL):**
-*   `DB_LOGGING_ENABLED`: Set to `true` to enable database logging (default: `false`).
-*   `LOGGING_DB_HOST`: Database host (default: `localhost`).
-*   `LOGGING_DB_PORT`: Database port (default: `5432`).
-*   `LOGGING_DB_NAME`: Database name (default: `agent_logs`).
-*   `LOGGING_DB_USER`: Database user (default: `postgres`).
-*   `LOGGING_DB_PASSWORD`: Database password (default: `postgres`).
-
-**Redis (for Token Management):**
-*   `REDIS_HOST`: Redis host (default: `localhost`).
-*   `REDIS_PORT`: Redis port (default: `6379`).
-
-## API Endpoints
-
-### Chat
-
-*   **POST** `/chat`: Send a message to the agent and get a complete response.
-*   **POST** `/chat/with-files`: Send a message with file uploads.
-*   **POST** `/chat/stream`: Send a message and receive a streaming response (SSE).
-*   **POST** `/chat/stream/with-files`: Streaming chat with file uploads.
-
-### Management
-
-*   **POST** `/agent/initialize`: Re-initialize the agent.
-*   **GET** `/agent/info`: Get details about the running agent.
-*   **POST** `/restart`: Gracefully restart the server.
-*   **POST** `/kill`: Immediately kill the server process.
-
-### Logs
-
-*   **GET** `/logs`: Retrieve chat logs with filtering options (session_id, user_id, date range).
-*   **GET** `/logs/sessions/{session_id}`: Get logs for a specific session.
-*   **GET** `/logs/stats`: Get usage statistics.
-*   **GET** `/logs/stats/users`: Get usage statistics grouped by user.
-
-### System
-
-*   **GET** `/health`: Simple health check.
-*   **GET** `/status`: Detailed server status (uptime, active requests).
-*   **GET** `/prompts`: View configured prompts.
-
-## Authentication
-
-When authentication is enabled, requests must include a valid API token in one of the following headers:
-*   `api-token`
-*   `api_token`
-*   `x-api-key`
-*   `Authorization: Bearer <token>`
-
-Tokens are managed via the `TokenManager` utility (backed by Redis).
-
-## Project Structure
-
-```
-oai_agent_server/
-├── main.py              # Application entry point
-├── config.py            # Configuration
-├── exceptions.py        # Custom exceptions
-├── middleware/          # Request processing middleware
-├── models/              # Pydantic data models
-├── routers/             # API route definitions
-├── services/            # Business logic
-├── security/            # Authentication & Security
-└── utils/               # Helper utilities
-```
-
-## Development
-
-To run the server during development:
+Or provide arguments directly:
 
 ```bash
-python -m oai_agent_server.main my_agent
+pytemplate new agent my_agent_project --author "Your Name" --email "your.email@capgemini.com"
 ```
+
+## 🤖 Agent Project Setup
+
+When creating an **Agent** project, the tool will:
+1. Ask for a list of agents (e.g., `research_agent, writer_agent`).
+2. Ask for a framework (`langgraph`, `crewai`, `strands`, or `openai`).
+3. Scaffold each agent with its own `agent.py`, `server.py`, and `<agent_name>.yaml` config.
+4. Enable the correct framework dependencies in your project files.
+
+**Next Steps for Agents:**
+- Implement your agent logic in `agentic_registry_agents/agents/<agent_name>/agent.py`.
+- Update the agent configuration in `agentic_registry_agents/agents_config/<agent_name>.yaml`.
+- Run your agent server: `python -m agentic_registry_agents.server`
+
+## 🛠 MCP Project Setup
+
+When creating an **MCP** project, the tool will:
+1. Ask for a list of MCP servers.
+2. Scaffold each server with its own `server.py` and `<server_name>.yaml` config.
+
+**Next Steps for MCP:**
+- Add necessary utility files in `mcp_registry_servers/utils/`.
+- Test your MCP server using the MCP Inspector or by running: `python -m mcp_registry_servers.server`
+
+## 📂 Project Structure
+
+The generated project will follow a standardized structure:
+
+```text
+my_project/
+├── pyproject.toml
+├── requirements.txt
+├── .venv/
+├── .gitignore
+├── agentic_registry_agents/ (for Agent projects)
+│   ├── agents/
+│   │   └── <agent_name>/
+│   │       ├── agent.py
+│   │       └── server.py
+│   └── agents_config/
+│       └── <agent_name>.yaml
+└── mcp_registry_servers/ (for MCP projects)
+    ├── servers/
+    │   └── <server_name>/
+    │       └── server.py
+    └── servers_config/
+        └── <server_name>.yaml
+```
+
+## 📄 License
+
+This project is licensed under the MIT License.
